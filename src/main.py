@@ -1,8 +1,7 @@
 import pygame
 import sys
-from board import Board
 from game import Game
-from const import * # Assuming WIDTH, HEIGHT, aur BOARD_WIDTH yahan defined hain
+from const import *  # WIDTH, HEIGHT, SQUARE_SIZE etc.
 from verbose1 import Model1Verbose
 from verbose2 import Model2Verbose
 
@@ -14,55 +13,70 @@ class Main:
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
         pygame.display.set_caption('Chess')
         self.clock = pygame.time.Clock()
-        
+
         # 2. Game aur Verbose Objects
         self.game = Game()
         self.verbose1 = Model1Verbose()
         self.verbose2 = Model2Verbose()
-        
-        # NOTE: self.game.show_bg(self.screen) ko __init__ se hata diya hai.
-        # Isko sirf mainloop mein hona chahiye taake har frame mein draw ho.
 
     def mainloop(self):
         screen = self.screen
         game = self.game
+        board_obj = self.game.board
+        dragger = self.game.dragger
         verbose1 = self.verbose1
         verbose2 = self.verbose2
-        
-        # Ek default background color for the side panels' area
-        # Grey ya halka black behtar hai taake text nazar aaye
-        BG_COLOR = (40, 40, 40) 
-        
-        while True:
-            
-            # --- Drawing Order ---
-            
-            # 1. Screen ki safai (Puri screen ko saaf karein)
-            screen.fill(BG_COLOR) 
-            
-            # 2. Chess Board Draw karein (Beech mein)
-            # Zaroori hai ki game.py mein X_OFFSET use ho raha ho
-            game.show_bg(screen) 
-            
-            # 3. Verbose 1 Draw karein (Left Side Panel)
-            verbose1.show_bg(screen)
-            
-            # 4. Verbose 2 Draw karein (Right Side Panel)
-            verbose2.show_bg(screen)
 
-            #5. Pieces Draw karein (Board ke upar)
-            game.show_pieces(screen,self.game.board)
+        # Side panels background color
+        BG_COLOR = (40, 40, 40)
+
+        while True:
+            # --- Drawing Order ---
+            screen.fill(BG_COLOR)                  # 1. Clear screen
+            game.show_bg(screen)                   # 2. Chess Board
+            verbose1.show_bg(screen)               # 3. Left panel
+            verbose2.show_bg(screen)               # 4. Right panel
+            game.show_pieces(screen, board_obj)    # 5. Pieces
+
+            if dragger.dragging:
+                dragger.update_blit(screen)        # 6. Dragging piece
 
             # --- Event Handling ---
             for event in pygame.event.get():
-                if event.type == pygame.QUIT:
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    dragger.update_mouse(event.pos)
+
+                    # ✅ Correct mapping (Y = row, X = col)
+                    clicked_row =( dragger.mouseY - Y_OFFSET) // SQUARE_SIZE
+                    clicked_col = (dragger.mouseX - X_OFFSET) // SQUARE_SIZE
+
+                    # ✅ Bounds check (avoid IndexError)
+                    if 0 <= clicked_row < ROWs and 0 <= clicked_col < COLs:
+                        square = board_obj.squares[clicked_row][clicked_col]
+                        print(f"Clicked: row={clicked_row}, col={clicked_col}, piece={square.piece}")
+
+                        if square and square.has_piece():
+                            piece = square.piece
+                            dragger.save_initial(event.pos)
+                            dragger.drag_piece(piece)
+
+                elif event.type == pygame.MOUSEBUTTONUP:
+                    dragger.undrag_piece()
+
+                elif event.type == pygame.MOUSEMOTION:
+                    if dragger.dragging:
+                        dragger.update_mouse(event.pos)
+                        dragger.update_blit(screen)
+
+                elif event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
 
             # --- Update Display ---
             pygame.display.update()
-            self.clock.tick(60) # Frame rate set karna achha hai
+            self.clock.tick(60)
 
 
-main = Main()
-main.mainloop()
+if __name__ == "__main__":
+    main = Main()
+    main.mainloop()
