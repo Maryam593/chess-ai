@@ -2,15 +2,12 @@
 
 import pygame
 from const import *
-
+from board import Board
 class Game:
-    # Yahan 'Self' ki jagah 'self' (small s) use karein
     def __init__ (self): 
-        # Yeh Python ka standard (convention) hai
-        
-        # In variables ko 'self.' ke saath define karein
+        self.board = Board()
         self.SQUARE_SIZE = SQUARE_SIZE
-        # Ensure 'WIDTH' aur 'BOARD_WIDTH' const.py se import ho rahe hon
+       
         self.X_OFFSET = (WIDTH - BOARD_WIDTH) // 2 
         self.ROWS = ROWs
         self.COLS = COLs
@@ -25,9 +22,19 @@ class Game:
                 else:
                     color = DARK
                 
-                # Ab yeh variables 'self' object mein mil jayenge
                 rect_x = self.X_OFFSET + col * self.SQUARE_SIZE
                 rect_y = row * self.SQUARE_SIZE
                 
-                # Draw rect call bhi theek hona chahiye
                 pygame.draw.rect(surface, color, (rect_x, rect_y, self.SQUARE_SIZE, self.SQUARE_SIZE))
+    
+    def show_pieces(self, surface, board):
+        for row in range(self.ROWS):
+            for col in range(self.COLS):
+                piece = board.squares[row][col].piece
+                if piece is not None:
+                    texture = pygame.image.load(piece.texture)
+                    texture = pygame.transform.scale(texture, (self.SQUARE_SIZE, self.SQUARE_SIZE))
+                    rect_x = self.X_OFFSET + col * self.SQUARE_SIZE
+                    rect_y = row * self.SQUARE_SIZE
+                    surface.blit(texture, (rect_x, rect_y)) 
+    

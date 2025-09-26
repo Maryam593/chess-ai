@@ -1,5 +1,6 @@
 import pygame
 import sys
+from board import Board
 from game import Game
 from const import * # Assuming WIDTH, HEIGHT, aur BOARD_WIDTH yahan defined hain
 from verbose1 import Model1Verbose
@@ -48,6 +49,9 @@ class Main:
             
             # 4. Verbose 2 Draw karein (Right Side Panel)
             verbose2.show_bg(screen)
+
+            #5. Pieces Draw karein (Board ke upar)
+            game.show_pieces(screen,self.game.board)
 
             # --- Event Handling ---
             for event in pygame.event.get():

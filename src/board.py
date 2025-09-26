@@ -1,32 +1,49 @@
+from turtle import color
+from const import *
+from square import Square
+from piece import *
 class Board:
-    # def __init__(self, rows, cols):
-    #     self.rows = rows
-    #     self.cols = cols
-    #     self.board = [[None for _ in range(cols)] for _ in range(rows)]
-
-    # def get_square(self, row, col):
-    #     if 0 <= row < self.rows and 0 <= col < self.cols:
-    #         return self.board[row][col]
-    #     return None
-
-    # def set_square(self, row, col, piece):
-    #     if 0 <= row < self.rows and 0 <= col < self.cols:
-    #         self.board[row][col] = piece
-
-    # def print_board(self):
-    #     for row in self.board:
-    #         print(" | ".join([str(piece) if piece else '.' for piece in row]))
-    #         print("-" * (self.cols * 4 - 1))
-
     def __init__(self):
         # pass
-        self.squares = []
+        self.squares = [[0,0,0,0,0,0,0,0] for col in range(COLs)]
         self.create_board() 
-        
+        self.add_pieces('white')
+        self.add_pieces('black')
+
     def create_board(self):
-        pass
-    def add_pieces(self,color):
-        pass
+        for row in range(ROWs):
+            for col in range(COLs):
+                self.squares[row][col] = Square(row,col)
+   
+    def add_pieces(self, color):
+    # Adding Pawns
+     row_pawn, row_other = (6,7) if color == 'white' else (1,0)
+     for col in range(COLs):
+        # pawns
+        self.squares[row_pawn][col] = Square(row_pawn, col, Pawn(color))
+
+    # Adding knights
+     self.squares[row_other][1] = Square(row_other, 1, Knight(color))
+     self.squares[row_other][6] = Square(row_other, 6, Knight(color))
+
+    # Adding bishops
+     self.squares[row_other][2] = Square(row_other, 2, Bishop(color)) 
+     self.squares[row_other][5] = Square(row_other, 5, Bishop(color)) 
+
+    # Adding rooks
+     self.squares[row_other][0] = Square(row_other, 0, Rook(color))    
+     self.squares[row_other][7] = Square(row_other, 7, Rook(color))
+
+    # Adding queen
+     self.squares[row_other][3] = Square(row_other, 3, Queen(color))   
+
+    # Adding king
+     self.squares[row_other][4] = Square(row_other, 4, King(color))    
+
+    # Debugging: print board pieces row by row
+     self.print_board()
+
+
     def move_piece(self):
         pass
     def get_piece(self):
@@ -44,4 +61,7 @@ class Board:
     def evaluate_board(self):
         pass
     def print_board(self):
-        pass                    
+        print(self.squares)
+
+b = Board()
+b.create_board()

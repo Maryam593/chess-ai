@@ -6,3 +6,6 @@ class Square:
 
     def get_pos(self):
         return self.row, self.col
+    
+    def has_piece(self):
+        return self.piece is not None
