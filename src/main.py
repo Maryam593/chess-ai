@@ -37,7 +37,7 @@ class Main:
             verbose1.show_bg(screen)               # 3. Left panel
             verbose2.show_bg(screen)               # 4. Right panel
             game.show_pieces(screen, board_obj)    # 5. Pieces
-
+            game.show_moves(screen)
             if dragger.dragging:
                 dragger.update_blit(screen)        # 6. Dragging piece
 
@@ -59,9 +59,12 @@ class Main:
                             piece = square.piece
                             dragger.save_initial(event.pos)
                             dragger.drag_piece(piece)
+                            game.moves = board_obj.calculate_moves(piece, clicked_row, clicked_col)
+                        else : game.moves = []  # Clear moves if empty square clicked
 
                 elif event.type == pygame.MOUSEBUTTONUP:
                     dragger.undrag_piece()
+                    game.moves = []  # Clear moves on drop
 
                 elif event.type == pygame.MOUSEMOTION:
                     if dragger.dragging:
