@@ -1,6 +1,7 @@
 from const import *
 from square import Square
 from piece import *
+from move import Move
 
 class Board:
     def __init__(self):
@@ -109,6 +110,10 @@ class Board:
             print(f"Move calculation for {piece.name} not implemented.")
         return moves    
     
+    def validate_move(self, piece, move):
+        possible_moves = self.calculate_moves(piece, move.start_pos[0], move.start_pos[1])
+        return move.end_pos in possible_moves
+
 # Debugging
 if __name__ == "__main__":
     b = Board()
