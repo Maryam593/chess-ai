@@ -2,6 +2,7 @@ import pygame
 import sys
 from game import Game
 from const import *  # WIDTH, HEIGHT, SQUARE_SIZE etc.
+import move
 from verbose1 import Model1Verbose
 from verbose2 import Model2Verbose
 
@@ -55,6 +56,7 @@ class Main:
                         square = board_obj.squares[clicked_row][clicked_col]
                         print(f"Clicked: row={clicked_row}, col={clicked_col}, piece={square.piece}")
 
+                      
                         if square and square.has_piece():
                             piece = square.piece
                             dragger.save_initial(event.pos)
@@ -63,6 +65,25 @@ class Main:
                         else : game.moves = []  # Clear moves if empty square clicked
 
                 elif event.type == pygame.MOUSEBUTTONUP:
+                    if dragger.dragging:
+                        dragger.update_mouse(event.pos)
+                        #calculate destination
+                        released_row = (dragger.mouseY - Y_OFFSET) // SQUARE_SIZE
+                        released_col = (dragger.mouseX - X_OFFSET) // SQUARE_SIZE
+
+                        #avoid going out of board
+                        if 0 <= released_row < ROWs and 0 <= released_col < COLs:
+                            piece = dragger.piece
+                            start_pos = (dragger.initial_row, dragger.initial_col)
+                            end_pos = (released_row, released_col)
+                            move_instance = move.Move(piece, start_pos, end_pos)
+                            #validate move
+                            if board_obj.validate_move(piece, move_instance):
+                                board_obj.move(piece, start_pos, end_pos)
+                                game.next_turn()
+                                print("valid move")
+                            else: print("invalid move")
+
                     dragger.undrag_piece()
                     game.moves = []  # Clear moves on drop
 
