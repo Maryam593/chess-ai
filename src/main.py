@@ -35,8 +35,12 @@ class Main:
             # --- Drawing Order ---
             screen.fill(BG_COLOR)                  # 1. Clear screen
             game.show_bg(screen)                   # 2. Chess Board
-            verbose1.show_bg(screen)               # 3. Left panel
-            verbose2.show_bg(screen)               # 4. Right panel
+
+            # Get game state for verbose panels
+            game_state = game.get_game_state()
+            verbose1.show_bg(screen, game_state)   # 3. Left panel (White)
+            verbose2.show_bg(screen, game_state)   # 4. Right panel (Black)
+
             game.show_pieces(screen, board_obj)    # 5. Pieces
             game.show_moves(screen)
             if dragger.dragging:
@@ -56,12 +60,17 @@ class Main:
                         square = board_obj.squares[clicked_row][clicked_col]
                         print(f"Clicked: row={clicked_row}, col={clicked_col}, piece={square.piece}")
 
-                      
+
                         if square and square.has_piece():
                             piece = square.piece
-                            dragger.save_initial(event.pos)
-                            dragger.drag_piece(piece)
-                            game.moves = board_obj.calculate_moves(piece, clicked_row, clicked_col)
+                            # Only allow dragging if it's this piece's turn
+                            if piece.color == game.next_player:
+                                dragger.save_initial(event.pos)
+                                dragger.drag_piece(piece)
+                                game.moves = board_obj.calculate_moves(piece, clicked_row, clicked_col)
+                            else:
+                                print(f"Not {piece.color}'s turn!")
+                                game.moves = []
                         else : game.moves = []  # Clear moves if empty square clicked
 
                 elif event.type == pygame.MOUSEBUTTONUP:
@@ -80,6 +89,7 @@ class Main:
                             #validate move
                             if board_obj.validate_move(piece, move_instance):
                                 board_obj.move(piece, start_pos, end_pos)
+                                game.record_move(piece, start_pos, end_pos)  # Record for verbose
                                 game.next_turn()
                                 print("valid move")
                             else: print("invalid move")

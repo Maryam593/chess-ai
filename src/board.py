@@ -46,21 +46,43 @@ class Board:
             print([str(square.piece.name if square.piece else " ") for square in row])
    
     def calculate_moves(self, piece, row, col):
-        # Placeholder for move calculation logic
         moves = []
+
         if piece.name == "Pawn":
             direction = -1 if piece.color == 'white' else 1
+
+            # Forward move (only if empty)
             if 0 <= row + direction < ROWs:
-                moves.append((row + direction, col))
-        # Add logic for other pieces
+                if not self.squares[row + direction][col].has_piece():
+                    moves.append((row + direction, col))
+
+                    # Initial 2-square move
+                    start_row = 6 if piece.color == 'white' else 1
+                    if row == start_row and not self.squares[row + 2*direction][col].has_piece():
+                        moves.append((row + 2*direction, col))
+
+            # Diagonal captures (only if opponent piece exists)
+            for dc in [-1, 1]:
+                capture_row = row + direction
+                capture_col = col + dc
+                if 0 <= capture_row < ROWs and 0 <= capture_col < COLs:
+                    if self.squares[capture_row][capture_col].has_rival_piece(piece.color):
+                        moves.append((capture_row, capture_col))
+
         elif piece.name == "Rook":
-            for r in range(ROWs):
-                if r != row:
-                    moves.append((r, col))  
-            for c in range(COLs):
-                if c != col:
-                    moves.append((row, c))
-        elif piece.name == "Knight":    
+            # Move in all 4 directions until blocked
+            directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+            for dr, dc in directions:
+                r, c = row + dr, col + dc
+                while 0 <= r < ROWs and 0 <= c < COLs:
+                    if self.squares[r][c].has_piece():
+                        # Can capture opponent piece, then stop
+                        if self.squares[r][c].has_rival_piece(piece.color):
+                            moves.append((r, c))
+                        break
+                    moves.append((r, c))
+                    r, c = r + dr, c + dc
+        elif piece.name == "Knight":
             knight_moves = [
                 (row + 2, col + 1), (row + 2, col - 1),
                 (row - 2, col + 1), (row - 2, col - 1),
@@ -69,33 +91,33 @@ class Board:
             ]
             for r, c in knight_moves:
                 if 0 <= r < ROWs and 0 <= c < COLs:
-                    moves.append((r, c))
+                    # Can't capture own pieces
+                    if not self.squares[r][c].has_team_piece(piece.color):
+                        moves.append((r, c))
         elif piece.name == "Bishop":
-            for i in range(1, ROWs):
-                if 0 <= row + i < ROWs and 0 <= col + i < COLs:
-                    moves.append((row + i, col + i))
-                if 0 <= row + i < ROWs and 0 <= col - i < COLs:
-                    moves.append((row + i, col - i))
-                if 0 <= row - i < ROWs and 0 <= col + i < COLs:
-                    moves.append((row - i, col + i))
-                if 0 <= row - i < ROWs and 0 <= col - i < COLs:
-                    moves.append((row - i, col - i))        
+            # Move in all 4 diagonal directions until blocked
+            directions = [(1, 1), (1, -1), (-1, 1), (-1, -1)]
+            for dr, dc in directions:
+                r, c = row + dr, col + dc
+                while 0 <= r < ROWs and 0 <= c < COLs:
+                    if self.squares[r][c].has_piece():
+                        if self.squares[r][c].has_rival_piece(piece.color):
+                            moves.append((r, c))
+                        break
+                    moves.append((r, c))
+                    r, c = r + dr, c + dc        
         elif piece.name == "Queen":
-            for r in range(ROWs):
-                if r != row:
-                    moves.append((r, col))  
-            for c in range(COLs):
-                if c != col:
-                    moves.append((row, c))
-            for i in range(1, ROWs):
-                if 0 <= row + i < ROWs and 0 <= col + i < COLs:
-                    moves.append((row + i, col + i))
-                if 0 <= row + i < ROWs and 0 <= col - i < COLs:
-                    moves.append((row + i, col - i))
-                if 0 <= row - i < ROWs and 0 <= col + i < COLs:
-                    moves.append((row - i, col + i))
-                if 0 <= row - i < ROWs and 0 <= col - i < COLs:
-                    moves.append((row - i, col - i))
+            # Queen = Rook + Bishop (all 8 directions)
+            directions = [(1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1)]
+            for dr, dc in directions:
+                r, c = row + dr, col + dc
+                while 0 <= r < ROWs and 0 <= c < COLs:
+                    if self.squares[r][c].has_piece():
+                        if self.squares[r][c].has_rival_piece(piece.color):
+                            moves.append((r, c))
+                        break
+                    moves.append((r, c))
+                    r, c = r + dr, c + dc
         elif piece.name == "King":
             king_moves = [
                 (row + 1, col), (row - 1, col),
@@ -105,7 +127,9 @@ class Board:
             ]
             for r, c in king_moves:
                 if 0 <= r < ROWs and 0 <= c < COLs:
-                    moves.append((r, c))
+                    # Can't capture own pieces
+                    if not self.squares[r][c].has_team_piece(piece.color):
+                        moves.append((r, c))
         else:
             print(f"Move calculation for {piece.name} not implemented.")
         return moves    
@@ -113,6 +137,19 @@ class Board:
     def validate_move(self, piece, move):
         possible_moves = self.calculate_moves(piece, move.start_pos[0], move.start_pos[1])
         return move.end_pos in possible_moves
+
+    def move(self, piece, start_pos, end_pos):
+        start_row, start_col = start_pos
+        end_row, end_col = end_pos
+
+        # Remove piece from start position
+        self.squares[start_row][start_col].piece = None
+
+        # Place piece at end position
+        self.squares[end_row][end_col].piece = piece
+
+        # Mark piece as moved
+        piece.moved = True
 
 # Debugging
 if __name__ == "__main__":
