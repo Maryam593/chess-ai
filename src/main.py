@@ -34,6 +34,7 @@ class Main:
         while True:
             # --- Drawing Order ---
             screen.fill(BG_COLOR)                  # 1. Clear screen
+            game.show_last_move(screen)
             game.show_bg(screen)                   # 2. Chess Board
 
             # Get game state for verbose panels
@@ -89,6 +90,7 @@ class Main:
                             #validate move
                             if board_obj.validate_move(piece, move_instance):
                                 board_obj.move(piece, start_pos, end_pos)
+                            
                                 game.record_move(piece, start_pos, end_pos)  # Record for verbose
                                 game.next_turn()
                                 print("valid move")
