@@ -45,13 +45,13 @@ class Model1Verbose:
                 surface.blit(piece_surface, (10, y_offset))
                 y_offset += 25
 
-            # Show last move
-            if game_state.get('last_move'):
-                y_offset += 10
-                last_move_text = "Last Move:"
-                last_surface = self.font_text.render(last_move_text, True, WHITE)
-                surface.blit(last_surface, (10, y_offset))
-                y_offset += 20
+            # # Show last move
+            # if game_state.get('last_move'):
+            #     y_offset += 10
+            #     last_move_text = "Last Move:"
+            #     last_surface = self.font_text.render(last_move_text, True, WHITE)
+            #     surface.blit(last_surface, (10, y_offset))
+            #     y_offset += 20
 
-                move_surface = self.font_text.render(game_state['last_move'], True, WHITE)
-                surface.blit(move_surface, (10, y_offset))
+            #     move_surface = self.font_text.render(game_state['last_move'], True, WHITE)
+            #     surface.blit(move_surface, (10, y_offset))
