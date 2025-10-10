@@ -113,11 +113,21 @@ class Main:
                          dragger.update_mouse(event.pos)
                          dragger.update_blit(screen)
                          # show_hover is now called in the main drawing loop
-                    
+
+                #key_press
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_t:    # Changing themes
+                        game.change_theme()
+                    if event.key == pygame.K_r:    # Reset game
+                        game.reset()    
+                         
+                  
+
                 elif event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
-
+            
+            
             # --- Update Display ---
             pygame.display.update()
             self.clock.tick(60)
