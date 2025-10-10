@@ -34,8 +34,8 @@ class Main:
         while True:
             # --- Drawing Order ---
             screen.fill(BG_COLOR)                  # 1. Clear screen
-            game.show_last_move(screen)
             game.show_bg(screen)                   # 2. Chess Board
+            game.show_last_move(screen)
 
             # Get game state for verbose panels
             game_state = game.get_game_state()
