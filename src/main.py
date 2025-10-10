@@ -1,7 +1,7 @@
 import pygame
 import sys
 from game import Game
-from const import *  # WIDTH, HEIGHT, SQUARE_SIZE etc.
+from const import * # WIDTH, HEIGHT, SQUARE_SIZE etc.
 import move
 from verbose1 import Model1Verbose
 from verbose2 import Model2Verbose
@@ -11,7 +11,8 @@ class Main:
     def __init__(self):
         # 1. Initialization
         pygame.init()
-        self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
+        # Ensure the screen supports transparency for hover effect
+        self.screen = pygame.display.set_mode((WIDTH, HEIGHT)) 
         pygame.display.set_caption('Chess')
         self.clock = pygame.time.Clock()
 
@@ -34,18 +35,19 @@ class Main:
         while True:
             # --- Drawing Order ---
             screen.fill(BG_COLOR)                  # 1. Clear screen
-            game.show_bg(screen)                   # 2. Chess Board
-            game.show_last_move(screen)
+            game.show_bg(screen)                   # 2. Chess Board Background
+            game.show_last_move(screen)            # 3. Last Move Highlight
+            game.show_hover(screen)                # 4. Hover Highlight (NEWLY ADDED TO DRAWING LOOP)
 
             # Get game state for verbose panels
             game_state = game.get_game_state()
-            verbose1.show_bg(screen, game_state)   # 3. Left panel (White)
-            verbose2.show_bg(screen, game_state)   # 4. Right panel (Black)
+            verbose1.show_bg(screen, game_state)   # 5. Left panel (White)
+            verbose2.show_bg(screen, game_state)   # 6. Right panel (Black)
 
-            game.show_pieces(screen, board_obj)    # 5. Pieces
+            game.show_pieces(screen, board_obj)    # 7. Pieces
             game.show_moves(screen)
             if dragger.dragging:
-                dragger.update_blit(screen)        # 6. Dragging piece
+                dragger.update_blit(screen)        # 8. Dragging piece
 
             # --- Event Handling ---
             for event in pygame.event.get():
@@ -100,10 +102,18 @@ class Main:
                     game.moves = []  # Clear moves on drop
 
                 elif event.type == pygame.MOUSEMOTION:
-                    if dragger.dragging:
-                        dragger.update_mouse(event.pos)
-                        dragger.update_blit(screen)
+                    
+                    motion_row = (event.pos[1] - Y_OFFSET) // SQUARE_SIZE
+                    motion_col = (event.pos[0] - X_OFFSET) // SQUARE_SIZE
+                    
+                    # Pass coordinates to set_hover. set_hover will handle boundary checking.
+                    game.set_hover(motion_row, motion_col)
 
+                    if dragger.dragging:
+                         dragger.update_mouse(event.pos)
+                         dragger.update_blit(screen)
+                         # show_hover is now called in the main drawing loop
+                    
                 elif event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()

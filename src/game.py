@@ -6,6 +6,7 @@ from board import Board
 from dragger import Dragger 
 from verbose1 import Model1Verbose
 from verbose2 import Model2Verbose
+
 class Game:
     def __init__ (self):
         self.board = Board()
@@ -13,6 +14,7 @@ class Game:
         self.verbose1 = Model1Verbose()
         self.verbose2 = Model2Verbose()
         self.SQUARE_SIZE = SQUARE_SIZE
+        self.hovered_sqr = None # Stores the Square object that is currently hovered
 
         self.X_OFFSET = (WIDTH - BOARD_WIDTH) // 2
         self.ROWS = ROWs
@@ -38,27 +40,37 @@ class Game:
     
     def show_last_move(self, surface):
         if self.board.last_move:
-            # FIX: Use the correct attribute names: start_pos and end_pos
             start_pos_tuple = self.board.last_move.start_pos
             end_pos_tuple = self.board.last_move.end_pos
             
-            # Iterate over the two (row, col) tuples
             for row, col in [start_pos_tuple, end_pos_tuple]:
                 
-                # The rest of the logic is correct for highlighting
-                LIGHT = (246, 246, 105) # Lighter highlight color
-                DARK = (186, 202, 43)   # Darker highlight color
+                LIGHT = (246, 246, 105) 
+                DARK = (186, 202, 43)   
 
+                # Calculate highlight color based on original square color
                 color = LIGHT if (row + col) % 2 == 0 else DARK
                 
-                # Need to use the stored SQUARE_SIZE and X_OFFSET
                 rect_x = self.X_OFFSET + col * self.SQUARE_SIZE
                 rect_y = row * self.SQUARE_SIZE
                 
-                # Draw the highlight
                 pygame.draw.rect(surface, color, (rect_x, rect_y, self.SQUARE_SIZE, self.SQUARE_SIZE))
 
-  
+    def show_hover(self, surface):
+        if self.hovered_sqr:
+            # color
+            color = (180, 180, 180, 150) # Use RGBA for slight transparency (requires surface support)
+            
+            # Recalculate rect using the hovered square's attributes and the X_OFFSET
+            rect_x = self.X_OFFSET + self.hovered_sqr.col * self.SQUARE_SIZE
+            rect_y = self.hovered_sqr.row * self.SQUARE_SIZE
+            
+            # Blit the highlight
+            s = pygame.Surface((self.SQUARE_SIZE, self.SQUARE_SIZE), pygame.SRCALPHA)
+            s.fill(color)
+            surface.blit(s, (rect_x, rect_y))
+
+
     def show_pieces(self, surface, board_obj):
         for row in range(self.ROWS):
             for col in range(self.COLS):
@@ -108,6 +120,13 @@ class Game:
         end_col = chr(97 + end_pos[1])
         end_row = 8 - end_pos[0]
         self.last_move_info = f"{piece.name} {start_col}{start_row}-{end_col}{end_row}"
+    
+    def set_hover(self, row, col):
+        """Sets the hovered square or clears it if coordinates are out of bounds."""
+        if 0 <= row < self.ROWS and 0 <= col < self.COLS:
+            self.hovered_sqr = self.board.squares[row][col]
+        else:
+            self.hovered_sqr = None # Clear hover state if off-board
 
     def get_game_state(self):
         # Build game state dict for verbose panels
@@ -118,4 +137,3 @@ class Game:
             'last_move': self.last_move_info
         }
         return state
-
