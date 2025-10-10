@@ -20,11 +20,11 @@ class Config:
        
     def change_theme(self):
           # FIX: Operate on self.all_themes list
-        num_themes = len(self.all_themes)
+        num_themes = len(self.themes)
         self.idx = (self.idx + 1) % num_themes # Simple modulo arithmetic for cycling
         
         # FIX: Update the current theme from the all_themes list
-        self.current_theme = self.all_themes[self.idx]
+        self.current_theme = self.themes[self.idx]
 
     def _add_themes(self):
         green_theme = Theme(

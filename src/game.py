@@ -144,6 +144,12 @@ class Game:
         self.last_move_info = None
         self.hovered_sqr = None
     
+    def sound_effect(self, capture=False):
+        if capture:
+            self.config.capture_sound.play()
+        else:
+            self.config.move_sound.play()
+    
     def change_theme(self):
         self.config.change_theme()
         print(f"Theme changed to: {self.config.themes.name}")    

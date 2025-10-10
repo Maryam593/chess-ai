@@ -89,10 +89,15 @@ class Main:
                             start_pos = (dragger.initial_row, dragger.initial_col)
                             end_pos = (released_row, released_col)
                             move_instance = move.Move(piece, start_pos, end_pos)
+                            
                             #validate move
                             if board_obj.validate_move(piece, move_instance):
-                                board_obj.move(piece, start_pos, end_pos)
+                                # FIX: Use board_obj.squares to access the board
+                                captured = board_obj.squares[released_row][released_col].has_piece()
                             
+                                board_obj.move(piece, start_pos, end_pos)
+                                #sound effect
+                                game.sound_effect(capture=captured)
                                 game.record_move(piece, start_pos, end_pos)  # Record for verbose
                                 game.next_turn()
                                 print("valid move")
