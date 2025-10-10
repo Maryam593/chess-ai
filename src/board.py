@@ -10,6 +10,7 @@ class Board:
         self.create_board()
         self.add_pieces('white')
         self.add_pieces('black')
+        self.last_move = None 
 
     def create_board(self):
         for row in range(ROWs):
@@ -150,6 +151,9 @@ class Board:
 
         # Mark piece as moved
         piece.moved = True
+
+        #last move 
+        self.last_move = Move(piece, start_pos, end_pos)
 
 # Debugging
 if __name__ == "__main__":

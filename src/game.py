@@ -36,14 +36,28 @@ class Game:
                 
                 pygame.draw.rect(surface, color, (rect_x, rect_y, self.SQUARE_SIZE, self.SQUARE_SIZE))
     
-    def show_last_move(self,surface):
+    def show_last_move(self, surface):
         if self.board.last_move:
-            initial = self.board.last_move.initial
-            final = self.board.last_move.final
-            for pos in [initial, final]:
-                color = (246, 246, 105) if (pos.row + pos.col) % 2 == 0 else (186, 202, 43)
-                rect = (pos.col *SQUARE_SIZE, pos.row *SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE)
-                pygame.draw.rect(surface, color, rect)
+            # FIX: Use the correct attribute names: start_pos and end_pos
+            start_pos_tuple = self.board.last_move.start_pos
+            end_pos_tuple = self.board.last_move.end_pos
+            
+            # Iterate over the two (row, col) tuples
+            for row, col in [start_pos_tuple, end_pos_tuple]:
+                
+                # The rest of the logic is correct for highlighting
+                LIGHT = (246, 246, 105) # Lighter highlight color
+                DARK = (186, 202, 43)   # Darker highlight color
+
+                color = LIGHT if (row + col) % 2 == 0 else DARK
+                
+                # Need to use the stored SQUARE_SIZE and X_OFFSET
+                rect_x = self.X_OFFSET + col * self.SQUARE_SIZE
+                rect_y = row * self.SQUARE_SIZE
+                
+                # Draw the highlight
+                pygame.draw.rect(surface, color, (rect_x, rect_y, self.SQUARE_SIZE, self.SQUARE_SIZE))
+
   
     def show_pieces(self, surface, board_obj):
         for row in range(self.ROWS):
