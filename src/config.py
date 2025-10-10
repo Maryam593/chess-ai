@@ -10,7 +10,7 @@ class Config:
         self._add_themes()
         self.idx = 0
         self.themes = self.themes[self.idx] #current
-        #font 
+        self.font = pygame.font.SysFont('Arial', 24)
         base_path = os.path.dirname(os.path.dirname(__file__))
         self.move_sound = Sound(os.path.join(base_path, 'assets', 'sounds', 'move.wav'))
         self.capture_sound = Sound(os.path.join(base_path, 'assets', 'sounds', 'capture.wav'))
