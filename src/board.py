@@ -140,20 +140,31 @@ class Board:
         return move.end_pos in possible_moves
 
     def move(self, piece, start_pos, end_pos):
-        start_row, start_col = start_pos
-        end_row, end_col = end_pos
+     start_row, start_col = start_pos
+     end_row, end_col = end_pos
 
-        # Remove piece from start position
-        self.squares[start_row][start_col].piece = None
+    # Remove piece from start position
+     self.squares[start_row][start_col].piece = None
 
-        # Place piece at end position
-        self.squares[end_row][end_col].piece = piece
+    # Place piece at end position
+     self.squares[end_row][end_col].piece = piece
 
-        # Mark piece as moved
-        piece.moved = True
+    # Mark piece as moved
+     piece.moved = True
 
-        #last move 
-        self.last_move = Move(piece, start_pos, end_pos)
+    # Pawn promotion check (AFTER move)
+     if piece.name == "Pawn":
+        self.check_pawn_promotion(piece, end_row, end_col)
+
+    # last move
+     self.last_move = Move(piece, start_pos, end_pos)
+
+
+    def check_pawn_promotion(self, piece, row, col):
+        if (piece.color == 'white' and row == 0) or (piece.color == 'black' and row == 7):
+            # For simplicity, auto-promote to Queen
+            self.squares[row][col].piece = Queen(piece.color)
+            print(f"Pawn promoted to Queen at {(row, col)}")
 
 # Debugging
 if __name__ == "__main__":
