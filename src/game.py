@@ -40,7 +40,7 @@ class Game:
                 pygame.draw.rect(surface, color, (rect_x, rect_y, self.SQUARE_SIZE, self.SQUARE_SIZE))
                 # row cordinates 
                 if col == 0:
-                    position_adjustement = 15
+                    position_adjustement = 20
                     color = theme.bg.dark if row % 2 == 0 else theme.bg.light
                     text = self.config.font.render(str(ROWs - row), True, color)
                     text_rect = text.get_rect(center=(self.X_OFFSET - position_adjustement, rect_y + self.SQUARE_SIZE // 2))
