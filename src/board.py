@@ -157,30 +157,38 @@ class Board:
             if end_col == 6 and self.squares[row][5].piece is None and self.squares[row][6].piece is None:
                 rook = self.squares[row][7].piece
                 if rook and rook.name == "Rook" and not rook.moved:
-                    # Move king
-                    self.squares[start_row][start_col].piece = None
-                    self.squares[end_row][end_col].piece = piece
-                    piece.moved = True
-                    # Move rook
-                    self.squares[row][5].piece = rook
-                    self.squares[row][7].piece = None
-                    rook.moved = True
-                    self.last_move = Move(piece, start_pos, end_pos)
-                    return
+                    # final safety: ensure king not in check and doesn't pass through attacked squares
+                    if not self.in_check(piece.color) and \
+                       not self.is_square_attacked(row, 5, self._opponent_color(piece.color)) and \
+                       not self.is_square_attacked(row, 6, self._opponent_color(piece.color)):
+                        # Move king
+                        self.squares[start_row][start_col].piece = None
+                        self.squares[end_row][end_col].piece = piece
+                        piece.moved = True
+                        # Move rook
+                        self.squares[row][5].piece = rook
+                        self.squares[row][7].piece = None
+                        rook.moved = True
+                        self.last_move = Move(piece, start_pos, end_pos)
+                        return
 
             # Queenside castling
             if end_col == 2 and all(self.squares[row][i].piece is None for i in [1,2,3]):
                 rook = self.squares[row][0].piece
                 if rook and rook.name == "Rook" and not rook.moved:
-                    self.squares[start_row][start_col].piece = None
-                    self.squares[end_row][end_col].piece = piece
-                    piece.moved = True
-                    # Move rook
-                    self.squares[row][3].piece = rook
-                    self.squares[row][0].piece = None
-                    rook.moved = True
-                    self.last_move = Move(piece, start_pos, end_pos)
-                    return
+                    # final safety: ensure king not in check and doesn't pass through attacked squares
+                    if not self.in_check(piece.color) and \
+                       not self.is_square_attacked(row, 3, self._opponent_color(piece.color)) and \
+                       not self.is_square_attacked(row, 2, self._opponent_color(piece.color)):
+                        self.squares[start_row][start_col].piece = None
+                        self.squares[end_row][end_col].piece = piece
+                        piece.moved = True
+                        # Move rook
+                        self.squares[row][3].piece = rook
+                        self.squares[row][0].piece = None
+                        rook.moved = True
+                        self.last_move = Move(piece, start_pos, end_pos)
+                        return
 
         # Normal move
         self.squares[start_row][start_col].piece = None
@@ -204,11 +212,18 @@ class Board:
         king = self.squares[row][4].piece
 
         if king and not king.moved:
+            # King must not be in check
+            if self.in_check(color):
+                return moves  # no castling if currently in check
+
             # Kingside
             if (self.squares[row][5].piece is None and self.squares[row][6].piece is None):
                 rook = self.squares[row][7].piece
                 if rook and rook.name == "Rook" and not rook.moved:
-                    moves.append((row, 6))
+                    # ensure squares the king passes through are not attacked
+                    if (not self.is_square_attacked(row, 5, self._opponent_color(color)) and
+                        not self.is_square_attacked(row, 6, self._opponent_color(color))):
+                        moves.append((row, 6))
 
             # Queenside
             if (self.squares[row][1].piece is None and
@@ -216,11 +231,117 @@ class Board:
                 self.squares[row][3].piece is None):
                 rook = self.squares[row][0].piece
                 if rook and rook.name == "Rook" and not rook.moved:
-                    moves.append((row, 2))
+                    if (not self.is_square_attacked(row, 3, self._opponent_color(color)) and
+                        not self.is_square_attacked(row, 2, self._opponent_color(color))):
+                        moves.append((row, 2))
 
         return moves
 
+    def in_check(self, color):
+        """
+        Return True if king of `color` is under attack.
+        """
+        # find king
+        king_pos = None
+        for r in range(ROWs):
+            for c in range(COLs):
+                sq = self.squares[r][c]
+                if sq.piece and sq.piece.name == "King" and sq.piece.color == color:
+                    king_pos = (r, c)
+                    break
+            if king_pos:
+                break
+
+        if king_pos is None:
+            # No king found (shouldn't happen in normal play)
+            return False
+
+        opponent = self._opponent_color(color)
+        return self.is_square_attacked(king_pos[0], king_pos[1], opponent)
+
+    def is_square_attacked(self, row, col, by_color):
+        """
+        Return True if square (row,col) is attacked by any piece of by_color.
+        This is a pseudo-legal attack test (ignores pins and special-case castling).
+        """
+        # Pawn attacks
+        direction = -1 if by_color == 'white' else 1
+        for dc in (-1, 1):
+            r = row + direction * -1  # reverse check: we want pieces that can attack (row,col)
+            # Instead of reversing formula confusion, test pawns located at row - direction
+        # simpler: check pawn positions that would attack (row,col)
+        pawn_row = row + (1 if by_color == 'white' else -1)
+        for dc in (-1, 1):
+            pr, pc = pawn_row, col + dc
+            if 0 <= pr < ROWs and 0 <= pc < COLs:
+                p = self.squares[pr][pc].piece
+                if p and p.name == "Pawn" and p.color == by_color:
+                    return True
+
+        # Knight attacks
+        knight_moves = [
+            (row+2, col+1), (row+2, col-1),
+            (row-2, col+1), (row-2, col-1),
+            (row+1, col+2), (row+1, col-2),
+            (row-1, col+2), (row-1, col-2)
+        ]
+        for r, c in knight_moves:
+            if 0 <= r < ROWs and 0 <= c < COLs:
+                p = self.squares[r][c].piece
+                if p and p.name == "Knight" and p.color == by_color:
+                    return True
+
+        # King (adjacent squares)
+        for dr in (-1, 0, 1):
+            for dc in (-1, 0, 1):
+                if dr == 0 and dc == 0:
+                    continue
+                r, c = row + dr, col + dc
+                if 0 <= r < ROWs and 0 <= c < COLs:
+                    p = self.squares[r][c].piece
+                    if p and p.name == "King" and p.color == by_color:
+                        return True
+
+        # Sliding pieces: Rook / Bishop / Queen
+        # Rook-like directions
+        rook_dirs = [(1,0), (-1,0), (0,1), (0,-1)]
+        for dr, dc in rook_dirs:
+            r, c = row + dr, col + dc
+            while 0 <= r < ROWs and 0 <= c < COLs:
+                p = self.squares[r][c].piece
+                if p:
+                    if p.color == by_color and (p.name == "Rook" or p.name == "Queen"):
+                        return True
+                    else:
+                        break
+                r += dr
+                c += dc
+
+        # Bishop-like directions
+        bishop_dirs = [(1,1), (1,-1), (-1,1), (-1,-1)]
+        for dr, dc in bishop_dirs:
+            r, c = row + dr, col + dc
+            while 0 <= r < ROWs and 0 <= c < COLs:
+                p = self.squares[r][c].piece
+                if p:
+                    if p.color == by_color and (p.name == "Bishop" or p.name == "Queen"):
+                        return True
+                    else:
+                        break
+                r += dr
+                c += dc
+
+        return False
+
+    def _opponent_color(self, color):
+        return 'black' if color == 'white' else 'white'
+
+    def en_passant_possible(self, pawn, start_pos, end_pos):
+        # Placeholder: keep as False for now (you can expand this later)
+        return False
+    
 # Debugging
 if __name__ == "__main__":
     b = Board()
+    print("Initial Board:")
     b.print_board()
