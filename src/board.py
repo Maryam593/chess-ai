@@ -5,13 +5,8 @@ from move import Move
 
 
 class Board:
-<<<<<<< HEAD
-    def __init__(self, game):
-        self.game = game
-=======
     def __init__(self):
         # ✅ Initialize 8x8 board
->>>>>>> a024bf0577fbd0076f17337ffd82a7da791e89af
         self.squares = [[None for col in range(COLs)] for row in range(ROWs)]
         self.create_board()
         self.add_pieces('white')
@@ -59,28 +54,17 @@ class Board:
         if piece.name == "Pawn":
             direction = -1 if piece.color == 'white' else 1
 
-<<<<<<< HEAD
-            # forward
-=======
             # Forward move
->>>>>>> a024bf0577fbd0076f17337ffd82a7da791e89af
             if 0 <= row + direction < ROWs:
                 if not self.squares[row + direction][col].has_piece():
                     moves.append((row + direction, col))
 
-<<<<<<< HEAD
-=======
                     # 2-step initial move
->>>>>>> a024bf0577fbd0076f17337ffd82a7da791e89af
                     start_row = 6 if piece.color == 'white' else 1
                     if row == start_row and not self.squares[row + 2 * direction][col].has_piece():
                         moves.append((row + 2 * direction, col))
 
-<<<<<<< HEAD
-            # captures
-=======
             # Diagonal captures
->>>>>>> a024bf0577fbd0076f17337ffd82a7da791e89af
             for dc in [-1, 1]:
                 r = row + direction
                 c = col + dc
@@ -98,12 +82,7 @@ class Board:
                             moves.append((r,c))
                         break
                     moves.append((r,c))
-<<<<<<< HEAD
-                    r += dr
-                    c += dc
-=======
                     r, c = r + dr, c + dc
->>>>>>> a024bf0577fbd0076f17337ffd82a7da791e89af
 
         elif piece.name == "Knight":
             knight_moves = [
@@ -118,11 +97,7 @@ class Board:
                         moves.append((r,c))
 
         elif piece.name == "Bishop":
-<<<<<<< HEAD
-            directions = [(1,1),(1,-1),(-1,1),(-1,-1)]
-=======
             directions = [(1,1), (1,-1), (-1,1), (-1,-1)]
->>>>>>> a024bf0577fbd0076f17337ffd82a7da791e89af
             for dr, dc in directions:
                 r, c = row + dr, col + dc
                 while 0 <= r < ROWs and 0 <= c < COLs:
@@ -131,22 +106,12 @@ class Board:
                             moves.append((r,c))
                         break
                     moves.append((r,c))
-<<<<<<< HEAD
-                    r += dr
-                    c += dc
-
-        elif piece.name == "Queen":
-            directions = [
-                (1,0),(-1,0),(0,1),(0,-1),
-                (1,1),(1,-1),(-1,1),(-1,-1)
-=======
                     r, c = r + dr, c + dc        
 
         elif piece.name == "Queen":
             directions = [
                 (1,0), (-1,0), (0,1), (0,-1),
                 (1,1), (1,-1), (-1,1), (-1,-1)
->>>>>>> a024bf0577fbd0076f17337ffd82a7da791e89af
             ]
             for dr, dc in directions:
                 r, c = row + dr, col + dc
@@ -156,12 +121,7 @@ class Board:
                             moves.append((r,c))
                         break
                     moves.append((r,c))
-<<<<<<< HEAD
-                    r += dr
-                    c += dc
-=======
                     r, c = r + dr, c + dc
->>>>>>> a024bf0577fbd0076f17337ffd82a7da791e89af
 
         elif piece.name == "King":
             king_moves = [
@@ -175,9 +135,6 @@ class Board:
                     if not self.squares[r][c].has_team_piece(piece.color):
                         moves.append((r,c))
 
-<<<<<<< HEAD
-        return moves
-=======
             # Include castling options
             for castle in self.king_castling_moves(piece.color):
                 moves.append(castle)
@@ -185,35 +142,12 @@ class Board:
         else:
             print(f"Move calculation for {piece.name} not implemented.")
         return moves    
->>>>>>> a024bf0577fbd0076f17337ffd82a7da791e89af
 
     def validate_move(self, piece, move):
         moves = self.calculate_moves(piece, move.start_pos[0], move.start_pos[1])
         return move.end_pos in moves
 
     def move(self, piece, start_pos, end_pos):
-<<<<<<< HEAD
-        sr, sc = start_pos
-        er, ec = end_pos
-
-        # remove from start
-        self.squares[sr][sc].piece = None
-
-        # place at end
-        self.squares[er][ec].piece = piece
-        piece.moved = True
-
-        # check promotion
-        if piece.name == "Pawn":
-            self.check_pawn_promotion(piece, er, ec)
-
-        self.last_move = Move(piece, start_pos, end_pos)
-
-        # game over check
-        if self.game.gameover.evaluate():
-            print(f"Game Over! Winner: {self.game.gameover.winner}")
-            self.game.stop_input = True
-=======
         start_row, start_col = start_pos
         end_row, end_col = end_pos
 
@@ -268,14 +202,11 @@ class Board:
             self.check_pawn_promotion(piece, end_row, end_col)
 
         self.last_move = Move(piece, start_pos, end_pos)
->>>>>>> a024bf0577fbd0076f17337ffd82a7da791e89af
 
     def check_pawn_promotion(self, piece, row, col):
         if (piece.color == 'white' and row == 0) or (piece.color == 'black' and row == 7):
             self.squares[row][col].piece = Queen(piece.color)
             print(f"Pawn promoted to Queen at {(row, col)}")
-<<<<<<< HEAD
-=======
 
     def king_castling_moves(self, color):
         moves = []
@@ -416,4 +347,3 @@ if __name__ == "__main__":
     b = Board()
     print("Initial Board:")
     b.print_board()
->>>>>>> a024bf0577fbd0076f17337ffd82a7da791e89af
