@@ -9,12 +9,14 @@ from verbose2 import Model2Verbose
 from theme import Theme
 from config import Config
 from square import Square
+from gameover import GameOver
 class Game:
     def __init__ (self):
-        self.board = Board()
+        self.board = Board(self)
         self.dragger = Dragger()
         self.verbose1 = Model1Verbose()
         self.verbose2 = Model2Verbose()
+        self.gameover = GameOver(self)
         self.SQUARE_SIZE = SQUARE_SIZE
         self.hovered_sqr = None # Stores the Square object that is currently hovered
         self.config = Config()  # Theme configuration
@@ -25,6 +27,7 @@ class Game:
         self.next_player = 'white'  # Track whose turn it is
         self.moves = []  # Initialize moves list
         self.last_move_info = None  # Track last move for display
+        self.stop_input = False
 
     def show_bg(self, surface):
         theme = self.config.themes
